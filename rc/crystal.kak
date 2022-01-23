@@ -97,7 +97,7 @@ add-highlighter -override shared/crystal/code/object-macros regex '\bclass_gette
 # Reference
 # https://crystal-lang.org/reference/master/syntax_and_semantics/constants.html
 
-add-highlighter -override shared/crystal/code/constants regex '\b[A-Z]\w*\b' 0:value
+add-highlighter -override shared/crystal/code/constant regex '\b[A-Z]\w*\b' 0:value
 
 # Numbers ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -105,8 +105,23 @@ add-highlighter -override shared/crystal/code/constants regex '\b[A-Z]\w*\b' 0:v
 # https://crystal-lang.org/reference/master/syntax_and_semantics/literals/integers.html
 # https://crystal-lang.org/reference/master/syntax_and_semantics/literals/floats.html
 
-add-highlighter -override shared/crystal/code/integers regex '\b\d(_?\d+)*\b' 0:value # 1_000_000
-add-highlighter -override shared/crystal/code/floats regex '\b\d(_?\d+)*\.\d(_?\d+)*\b' 0:value # 1_000_000.111_111
+# Examples:
+#
+# decimal number ⇒ 1_000_000
+# float number ⇒ 1_000_000.111_111
+#
+add-highlighter -override shared/crystal/code/integer-decimal regex '\b\d(_?\d+)*(_[iu](8|16|32|64|128))?\b' 0:value
+add-highlighter -override shared/crystal/code/float-decimal regex '\b\d(_?\d+)*\.\d(_?\d+)*(_(f32|f64))?\b' 0:value
+
+# Examples:
+#
+# binary number ⇒ 0b1101
+# octal number ⇒ 0o123
+# hexadecimal number ⇒ 0xfe012d
+#
+add-highlighter -override shared/crystal/code/integer-binary regex '\b0b[0-1]+(_[iu](8|16|32|64|128))?\b' 0:value
+add-highlighter -override shared/crystal/code/integer-octal regex '\b0o[0-7]+(_[iu](8|16|32|64|128))?\b' 0:value
+add-highlighter -override shared/crystal/code/integer-hexadecimal regex '\b0x[0-9a-fA-F]+(_[iu](8|16|32|64|128))?\b' 0:value
 
 # Comments ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -119,12 +134,38 @@ add-highlighter -override shared/crystal/code/floats regex '\b\d(_?\d+)*\.\d(_?\
 #
 # puts "hello #{name}"
 #
-add-highlighter -override shared/crystal/comment region '#(?!\{)' '$' fill comment
+add-highlighter -override shared/crystal/comment region '#(?!\{)' '$' group
+
+# Documenting code ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+
+# Reference
+# https://crystal-lang.org/reference/master/syntax_and_semantics/documenting_code.html
+
+# Example:
+#
+# A unicorn is a **legendary animal**.
+#
+# To create a unicorn:
+#
+# ```
+# unicorn = Unicorn.new
+# unicorn.speak
+# ```
+#
+# Check the number of horns with `#horns`.
+#
+add-highlighter -override shared/crystal/comment/fill fill comment
+add-highlighter -override shared/crystal/comment/reference regex "`[#.]?%opt{crystal_word_pattern}`" 0:mono
+add-highlighter -override shared/crystal/comment/parameter regex '\*\w+\*' 0:mono
+add-highlighter -override shared/crystal/comment/code regex '```' 0:block
+add-highlighter -override shared/crystal/comment/admonition regex '\h+([A-Z]+):\h+' 1:meta
+add-highlighter -override shared/crystal/comment/directive regex ':\w+:' 0:meta
 
 # Interpolation ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
 # Reference
 # https://crystal-lang.org/reference/master/syntax_and_semantics/literals/string.html#interpolation
+# https://crystal-lang.org/reference/master/syntax_and_semantics/literals/string.html#escaping
 
 # Defines Crystal interpolation.
 #
@@ -144,11 +185,27 @@ define-command -override -hidden define-crystal-interpolation -params .. %{
   set-option global crystal_optional_arguments %arg{@}
   set-option -remove global crystal_optional_arguments %arg{1} %arg{2}
   add-highlighter -override "shared/crystal/%arg{1}" region %opt{crystal_optional_arguments} regions
-  add-highlighter -override "shared/crystal/%arg{1}/fill" default-region fill %arg{2}
+  add-highlighter -override "shared/crystal/%arg{1}/content" default-region group
+  add-highlighter -override "shared/crystal/%arg{1}/content/fill" fill %arg{2}
+  add-highlighter -override "shared/crystal/%arg{1}/content/escaped-character" regex '\\.' 0:meta
+  add-highlighter -override "shared/crystal/%arg{1}/content/escape-sequence" regex '\\(x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|u\{[0-9a-fA-F]+\})' 0:meta
   add-highlighter -override "shared/crystal/%arg{1}/interpolation" region -recurse '\{' '#\{' '\}' group # }
   add-highlighter -override "shared/crystal/%arg{1}/interpolation/delimiters" regex '(?<opening>..).+(?<closing>.)' opening:meta closing:meta
   add-highlighter -override "shared/crystal/%arg{1}/interpolation/crystal" ref crystal
 }
+
+# Characters ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+
+# Reference
+# https://crystal-lang.org/reference/master/syntax_and_semantics/literals/char.html
+
+# Examples:
+#
+# simple character ⇒ 'a'
+# single quote ⇒ '\''
+# backslash ⇒ '\\'
+#
+define-crystal-interpolation character value "'" "(?<!\\)(\\\\)*'"
 
 # String ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -307,7 +364,6 @@ define-command -override -hidden crystal-buffer-build-result-with-static-words -
 define-command -override -hidden crystal-check-news %{
   # Initialization
   edit! -scratch '*crystal*'
-  set-register dquote
   set-option window static_words
 
   # Keywords ⇒ https://github.com/crystal-lang/crystal/blob/master/src/compiler/crystal/syntax/lexer.cr
