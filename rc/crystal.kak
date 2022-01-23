@@ -157,7 +157,7 @@ add-highlighter -override shared/crystal/comment/fill fill comment
 #
 add-highlighter -override shared/crystal/comment/reference regex "`[#.]?%opt{crystal_word_pattern}`" 0:mono
 add-highlighter -override shared/crystal/comment/parameter regex '\*\w+\*' 0:mono
-add-highlighter -override shared/crystal/comment/code regex '```' 0:block
+add-highlighter -override shared/crystal/comment/code regex '```(\h*\w+\b)?' 0:block
 add-highlighter -override shared/crystal/comment/admonition regex '\h+([A-Z]+):\h+' 1:meta
 add-highlighter -override shared/crystal/comment/directive regex ':\w+:' 0:meta
 
