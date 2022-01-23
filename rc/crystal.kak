@@ -135,6 +135,7 @@ add-highlighter -override shared/crystal/code/integer-hexadecimal regex '\b0x[0-
 # puts "hello #{name}"
 #
 add-highlighter -override shared/crystal/comment region '#(?!\{)' '$' group
+add-highlighter -override shared/crystal/comment/fill fill comment
 
 # Documenting code ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -154,7 +155,6 @@ add-highlighter -override shared/crystal/comment region '#(?!\{)' '$' group
 #
 # Check the number of horns with `#horns`.
 #
-add-highlighter -override shared/crystal/comment/fill fill comment
 add-highlighter -override shared/crystal/comment/reference regex "`[#.]?%opt{crystal_word_pattern}`" 0:mono
 add-highlighter -override shared/crystal/comment/parameter regex '\*\w+\*' 0:mono
 add-highlighter -override shared/crystal/comment/code regex '```' 0:block
