@@ -157,7 +157,7 @@ add-highlighter -override shared/crystal/comment/fill fill comment
 #
 add-highlighter -override shared/crystal/comment/reference regex "`[#.]?%opt{crystal_word_pattern}`" 0:mono
 add-highlighter -override shared/crystal/comment/parameter regex '\*\w+\*' 0:mono
-add-highlighter -override shared/crystal/comment/code regex '```(\h*\w+\b)?' 0:block
+add-highlighter -override shared/crystal/comment/code-block regex '```(\h*\w+)?$' 0:block
 add-highlighter -override shared/crystal/comment/admonition regex '\h+([A-Z]+):\h+' 1:meta
 add-highlighter -override shared/crystal/comment/directive regex ':\w+:' 0:meta
 
@@ -207,7 +207,7 @@ define-command -override -hidden define-crystal-interpolation -params .. %{
 #
 define-crystal-interpolation character value "'" "(?<!\\)(\\\\)*'"
 
-# String ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+# Strings ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
 # Reference
 # https://crystal-lang.org/reference/master/syntax_and_semantics/literals/string.html
@@ -268,7 +268,7 @@ add-highlighter -override shared/crystal/raw-pipe-string region '%[qwi]\|' '\|' 
 define-crystal-interpolation heredoc string -match-capture '<<-(\w+)' '^\h*(\w+)$'
 add-highlighter -override shared/crystal/raw-heredoc region -match-capture "<<-'(\w+)'" '^\h*(\w+)$' fill string
 
-# Symbol ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+# Symbols ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
 # Reference
 # https://crystal-lang.org/reference/master/syntax_and_semantics/literals/symbol.html
@@ -393,7 +393,7 @@ define-command -override -hidden crystal-check-news %{
   execute-keys '%<a-R>'
   crystal-buffer-build-result static_words
 
-  # Display result
+  # Show result
   delete-buffer
   buffer '*debug*'
   execute-keys 'gj'
