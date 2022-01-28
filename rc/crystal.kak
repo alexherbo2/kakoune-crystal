@@ -23,8 +23,8 @@ remove-hooks global crystal-indent
 hook -group crystal-indent global WinSetOption filetype=crystal %{
   hook -group crystal-indent window InsertChar '\n' crystal-indent-on-new-line
   # Increase and decrease indent with Tab.
-  map -docstring 'Increase indent' global insert <tab> '<a-;><a-gt>'
-  map -docstring 'Decrease indent' global insert <s-tab> '<a-;><lt>'
+  map -docstring 'Increase indent' window insert <tab> '<a-;><a-gt>'
+  map -docstring 'Decrease indent' window insert <s-tab> '<a-;><lt>'
   hook -always -once window WinSetOption 'filetype=.*' %{
     remove-hooks window crystal-indent-on-new-line
     unmap window insert <tab>
@@ -47,10 +47,12 @@ hook -group crystal-config global WinSetOption filetype=crystal %{
 # Indentation ──────────────────────────────────────────────────────────────────
 
 define-command -override -hidden crystal-indent-on-new-line %{
-  # Copy previous line indent
-  try %[ execute-keys -draft 'K<a-&>' ]
-  # Clean previous line indent
-  try %[ execute-keys -draft 'k<a-x>s^\h+$<ret>d' ]
+  evaluate-commands -draft -itersel %{
+    # Copy previous line indent
+    try %[ execute-keys -draft 'K<a-&>' ]
+    # Clean previous line indent
+    try %[ execute-keys -draft 'k<a-x>s^\h+$<ret>d' ]
+  }
 }
 
 # Highlighters ─────────────────────────────────────────────────────────────────
