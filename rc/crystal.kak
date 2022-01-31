@@ -1,6 +1,17 @@
 # Crystal
 # https://crystal-lang.org
 
+# Configuration ────────────────────────────────────────────────────────────────
+
+# Word pattern
+# https://code.visualstudio.com/api/language-extensions/language-configuration-guide#word-pattern
+declare-option -docstring 'Crystal word pattern' str crystal_word_pattern '\w+[?!]?'
+
+# Indentation rules
+# https://code.visualstudio.com/api/language-extensions/language-configuration-guide#indentation-rules
+declare-option -docstring 'Crystal indentation rules to increase the indentation of the next line' str crystal_indentation_rules_increase_indent_pattern '[({\[]$|^\h*(def|if|elsif|else)'
+declare-option -docstring 'Crystal indentation rules to decrease the indentation of the current line' str crystal_indentation_rules_decrease_indent_pattern '^\h*[)}\]]\z|^\h*(end|elsif|else)\z'
+
 # Detection ────────────────────────────────────────────────────────────────────
 
 # Sets Crystal filetype when opening `.cr` files.
@@ -21,12 +32,12 @@ hook -group crystal-highlight global WinSetOption filetype=crystal %{
 # Sets indentation rules for Crystal filetype.
 remove-hooks global crystal-indent
 hook -group crystal-indent global WinSetOption filetype=crystal %{
-  hook -group crystal-indent window InsertChar '\n' crystal-indent-on-new-line
+  hook -group crystal-indent window InsertChar '.*' crystal-indent-on-inserted-character
   # Increase and decrease indent with Tab.
   map -docstring 'Increase indent' window insert <tab> '<a-;><a-gt>'
   map -docstring 'Decrease indent' window insert <s-tab> '<a-;><lt>'
   hook -always -once window WinSetOption 'filetype=.*' %{
-    remove-hooks window crystal-indent-on-new-line
+    remove-hooks window crystal-indent
     unmap window insert <tab>
     unmap window insert <s-tab>
   }
@@ -46,20 +57,39 @@ hook -group crystal-config global WinSetOption filetype=crystal %{
 
 # Indentation ──────────────────────────────────────────────────────────────────
 
-define-command -override -hidden crystal-indent-on-new-line %{
+define-command -override -hidden crystal-indent-on-inserted-character %{
   evaluate-commands -draft -itersel %{
-    # Copy previous line indent
-    try %[ execute-keys -draft 'K<a-&>' ]
-    # Clean previous line indent
-    try %[ execute-keys -draft 'k<a-x>s^\h+$<ret>d' ]
+    # Select inserted character
+    execute-keys h
+
+    try %{
+      # Indent on new line
+      execute-keys -draft '<a-k>\n<ret>'
+      # Copy previous line indent
+      execute-keys -draft 'L<a-&>'
+      # Clean previous line indent
+      try %[ execute-keys -draft '<a-x>s^\h+$<ret>d' ]
+
+      try %{
+        # Increase the indentation of the next line
+        execute-keys -draft '<a-h><a-k>%opt{crystal_indentation_rules_increase_indent_pattern}<a-!><ret>'
+        execute-keys -draft 'l<a-gt>'
+      } catch %{
+        # Decrease the indentation of the next line
+      }
+    } catch %{
+      # Decrease the indentation of the current line
+      execute-keys -draft '<a-h><a-k>%opt{crystal_indentation_rules_decrease_indent_pattern}<a-!><ret>'
+      execute-keys -draft '<lt>'
+    } catch %{
+      # Increase the indentation of the current line
+    }
   }
 }
 
 # Highlighters ─────────────────────────────────────────────────────────────────
 
-# Internal variables
-declare-option -hidden str crystal_word_pattern '\w+[?!]?'
-
+# Creates the base regions
 add-highlighter -override shared/crystal regions
 add-highlighter -override shared/crystal/code default-region group
 
@@ -375,7 +405,7 @@ define-command -override -hidden crystal-check-news %{
 
   # Operators ⇒ https://github.com/crystal-lang/crystal/blob/master/src/compiler/crystal/syntax/parser.cr
   execute-keys '%|curl -sSL https://github.com/crystal-lang/crystal/raw/master/src/compiler/crystal/syntax/parser.cr<ret>'
-  execute-keys '%<a-s><a-k>AtomicWithMethodCheck\h+=<ret>1<s>:"([^"[]+)"<ret>Z%<a-s><a-k>(check|when)\h+:<ret>1<s>:"([^"]{2,3})"<ret><a-z>a'
+  execute-keys '%<a-s><a-k>AtomicWithMethodCheck\h+=<ret>1<s>:"([^"\[]+)"<ret>Z%<a-s><a-k>(check|when)\h+:<ret>1<s>:"([^"]{2,3})"<ret><a-z>a'
   crystal-buffer-build-result operators
 
   # Top Level Namespace
