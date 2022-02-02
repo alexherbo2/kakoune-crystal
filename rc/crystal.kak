@@ -9,8 +9,137 @@ declare-option -docstring 'Crystal word pattern' str crystal_word_pattern '\w+[?
 
 # Indentation rules
 # https://code.visualstudio.com/api/language-extensions/language-configuration-guide#indentation-rules
-declare-option -docstring 'Crystal indentation rules to increase the indentation of the next line' str crystal_indentation_rules_increase_indent_pattern '[({\[]$|^\h*(def|if|elsif|else)'
-declare-option -docstring 'Crystal indentation rules to decrease the indentation of the current line' str crystal_indentation_rules_decrease_indent_pattern '^\h*[)}\]]\z|^\h*(end|elsif|else)\z'
+declare-option -docstring 'Crystal indentation rules to increase the indentation of the next line' str crystal_indentation_rules_increase_indent_pattern '[({\[]$|^\h*(X)'
+declare-option -docstring 'Crystal indentation rules to decrease the indentation of the current line' str crystal_indentation_rules_decrease_indent_pattern '^\h*[)}\]]\z|^\h*(X)\z'
+
+# Indentation rules
+# https://code.visualstudio.com/api/language-extensions/language-configuration-guide#indentation-rules
+declare-option -docstring 'Crystal indentation rules to increase the indentation of the next line' str crystal_indentation_rules_increase_indent_pattern '[({\[]$|^\h*(if|elsif|else|unless|case|when|case|in|while|until|class|private\h+class|abstract\h+class|private\h+abstract\h+class|def|private\h+def|protected\h+def|module|private\h+module|struct|private\h+struct|abstract\h+struct|private\h+abstract\h+struct|enum|private\h+enum|begin|rescue|ensure|macro|annotation|lib|private\h+lib)'
+declare-option -docstring 'Crystal indentation rules to decrease the indentation of the current line' str crystal_indentation_rules_decrease_indent_pattern '^\h*[)}\]]\z|^\h*(elsif|else|end|when|in|rescue|ensure)\z'
+
+# Reference
+#
+# https://crystal-lang.org/reference/master/syntax_and_semantics/control_expressions.html
+#
+# https://crystal-lang.org/reference/master/syntax_and_semantics/if.html
+#
+# if some_condition
+# elsif some_other_condition
+# else
+# end
+#
+# https://crystal-lang.org/reference/master/syntax_and_semantics/unless.html
+#
+# unless some_condition
+# end
+#
+# https://crystal-lang.org/reference/master/syntax_and_semantics/case.html
+#
+# case expression
+# when value
+# end
+#
+# case expression
+# in value
+# end
+#
+# https://crystal-lang.org/reference/master/syntax_and_semantics/while.html
+#
+# while some_condition
+# end
+#
+# https://crystal-lang.org/reference/master/syntax_and_semantics/until.html
+#
+# until some_condition
+# end
+#
+# https://crystal-lang.org/reference/master/syntax_and_semantics/types_and_methods.html
+# https://crystal-lang.org/reference/master/syntax_and_semantics/visibility.html
+# https://crystal-lang.org/reference/master/syntax_and_semantics/virtual_and_abstract_types.html
+#
+# https://crystal-lang.org/reference/master/syntax_and_semantics/classes_and_methods.html
+#
+# class Person
+# end
+#
+# private class Person
+# end
+#
+# abstract class Person
+# end
+#
+# private abstract class Person
+# end
+#
+# def name
+# end
+#
+# private def name
+# end
+#
+# protected def name
+# end
+#
+# https://crystal-lang.org/reference/master/syntax_and_semantics/modules.html
+#
+# module JSON
+# end
+#
+# private module JSON
+# end
+#
+# https://crystal-lang.org/reference/master/syntax_and_semantics/structs.html
+#
+# struct Point
+# end
+#
+# private struct Point
+# end
+#
+# abstract struct Point
+# end
+#
+# private abstract struct Point
+# end
+#
+# https://crystal-lang.org/reference/master/syntax_and_semantics/enum.html
+#
+# enum Color
+# end
+#
+# private enum Color
+# end
+#
+# https://crystal-lang.org/reference/master/syntax_and_semantics/blocks_and_procs.html
+#
+# loop do
+# end
+#
+# https://crystal-lang.org/reference/master/syntax_and_semantics/exception_handling.html
+#
+# begin
+# rescue exception
+# ensure
+# end
+#
+# https://crystal-lang.org/reference/master/syntax_and_semantics/macros/
+#
+# macro version
+# end
+#
+# https://crystal-lang.org/reference/master/syntax_and_semantics/annotations/
+#
+# annotation Link
+# end
+#
+# https://crystal-lang.org/reference/master/syntax_and_semantics/c_bindings/
+# https://crystal-lang.org/reference/master/syntax_and_semantics/c_bindings/lib.html
+#
+# lib C
+# end
+#
+# private lib C
+# end
 
 # Detection ────────────────────────────────────────────────────────────────────
 
@@ -115,14 +244,30 @@ add-highlighter -override shared/crystal/code/method-call regex "\b(%opt{crystal
 
 add-highlighter -override shared/crystal/code/instance-and-class-variables regex '@@?\w+\b' 0:variable
 
-# Keywords and operators ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+# Keywords ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
 # Note:
 # Generated with `crystal-check-news`.
-add-highlighter -override shared/crystal/code/keywords regex '\babstract\b|\balias\b|\bannotation\b|\bas\b|\bas\?|\basm\b|\bbegin\b|\bbreak\b|\bcase\b|\bclass\b|\bdef\b|\bdo\b|\belse\b|\belsif\b|\bend\b|\bensure\b|\benum\b|\bextend\b|\bfalse\b|\bfor\b|\bfun\b|\bif\b|\bin\b|\binclude\b|\binstance_sizeof\b|\bis_a\?|\blib\b|\bmacro\b|\bmodule\b|\bnext\b|\bnil\b|\bnil\?|\bof\b|\boffsetof\b|\bout\b|\bpointerof\b|\bprivate\b|\bprotected\b|\brequire\b|\brescue\b|\bresponds_to\?|\breturn\b|\bselect\b|\bself\b|\bsizeof\b|\bstruct\b|\bsuper\b|\bthen\b|\btrue\b|\btype\b|\btypeof\b|\buninitialized\b|\bunion\b|\bunless\b|\buntil\b|\bverbatim\b|\bwhen\b|\bwhile\b|\bwith\b|\byield\b' 0:keyword
-add-highlighter -override shared/crystal/code/operators regex '!|!=|!~|\$\?|\$~|%|%=|%\}|&|&&=|&\*|&\*\*|&\*=|&\+|&\+=|&-|&-=|&=|\*|\*\*|\*\*=|\*=|\+|\+=|-|-=|->|\.\.|\.\.\.|/|//|//=|/=|::|<|<<|<<=|<=|<=>|==|===|=>|=~|>|>=|>>|>>=|@\[|\[\]|\^|\^=|\{%|\{\{|\||\|=|\|\|=|\}\}|~' 0:operator
-add-highlighter -override shared/crystal/code/top-level regex '\babort\b|\bat_exit\b|\bcaller\b|\bdebugger\b|\bexit\b|\bgets\b|\binstance_sizeof\b|\bloop\b|\bmain\b|\boffsetof\b|\bp\b|\bp!|\bpointerof\b|\bpp\b|\bpp!|\bprint\b|\bprintf\b|\bputs\b|\braise\b|\braise_without_backtrace\b|\brand\b|\bread_line\b|\brecord\b|\bsizeof\b|\bsleep\b|\bspawn\b|\bsprintf\b|\bsystem\b|\btimeout_select_action\b|\btypeof\b' 0:builtin
-add-highlighter -override shared/crystal/code/object-macros regex '\bclass_getter\b|\bclass_getter!|\bclass_getter\?|\bclass_property\b|\bclass_property!|\bclass_property\?|\bclass_setter\b|\bdef_clone\b|\bdef_equals\b|\bdef_equals_and_hash\b|\bdef_hash\b|\bdelegate\b|\bforward_missing_to\b|\bgetter\b|\bgetter!|\bgetter\?|\bproperty\b|\bproperty!|\bproperty\?|\bsetter\b' 0:builtin
+add-highlighter -override shared/crystal/code/keyword regex '\binstance_sizeof\b|\buninitialized\b|\bresponds_to\?|\bannotation\b|\bprotected\b|\bpointerof\b|\bverbatim\b|\boffsetof\b|\babstract\b|\brequire\b|\bprivate\b|\binclude\b|\bunless\b|\btypeof\b|\bstruct\b|\bsizeof\b|\bselect\b|\breturn\b|\brescue\b|\bmodule\b|\bextend\b|\bensure\b|\byield\b|\bwhile\b|\buntil\b|\bunion\b|\bsuper\b|\bmacro\b|\bis_a\?|\bfalse\b|\belsif\b|\bclass\b|\bbreak\b|\bbegin\b|\balias\b|\bwith\b|\bwhen\b|\btype\b|\btrue\b|\bthen\b|\bself\b|\bnil\?|\bnext\b|\benum\b|\belse\b|\bcase\b|\bout\b|\bnil\b|\blib\b|\bfun\b|\bfor\b|\bend\b|\bdef\b|\basm\b|\bas\?|\bof\b|\bin\b|\bif\b|\bdo\b|\bas\b' 0:keyword
+
+# Built-in functions ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+
+# Note:
+# Generated with `crystal-check-news`.
+add-highlighter -override shared/crystal/code/top-level-namespace regex '\braise_without_backtrace\b|\btimeout_select_action\b|\binstance_sizeof\b|\bread_line\b|\bpointerof\b|\boffsetof\b|\bdebugger\b|\bsprintf\b|\bat_exit\b|\btypeof\b|\bsystem\b|\bsizeof\b|\brecord\b|\bprintf\b|\bcaller\b|\bspawn\b|\bsleep\b|\braise\b|\bprint\b|\babort\b|\brand\b|\bputs\b|\bmain\b|\bloop\b|\bgets\b|\bexit\b|\bpp!|\bpp\b|\bp!|\bp\b' 0:builtin
+add-highlighter -override shared/crystal/code/object-macro regex '\bdef_equals_and_hash\b|\bforward_missing_to\b|\bclass_property\?|\bclass_property!|\bclass_property\b|\bclass_getter\?|\bclass_getter!|\bclass_setter\b|\bclass_getter\b|\bdef_equals\b|\bproperty\?|\bproperty!|\bdef_clone\b|\bproperty\b|\bdelegate\b|\bdef_hash\b|\bgetter\?|\bgetter!|\bsetter\b|\bgetter\b' 0:builtin
+
+# Punctuation ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+
+add-highlighter -override shared/crystal/code/punctuation regex '\.|::' 0:meta
+
+# Operators ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+
+# Reference
+# https://crystal-lang.org/reference/master/syntax_and_semantics/operators.html
+
+add-highlighter -override shared/crystal/code/operator regex '[!%&*+/<=>^|~-]' 0:operator
+add-highlighter -override shared/crystal/code/range regex '\.\.\.?' 0:operator
 
 # Constants ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -381,9 +526,11 @@ define-crystal-interpolation pipe-command meta '%x\|' '\|'
 #
 define-command -override -hidden crystal-buffer-build-result -params 1 %{
   execute-keys 'a<ret><esc>y%<a-R>%|sort -u<ret><a-s>_'
-  execute-keys -save-regs '' '*'
   echo -debug crystal %arg{1} as str-list:
   echo -debug -quoting kakoune %val{selections}
+
+  execute-keys '%|awk ''{ print length, $0 }'' | sort -n -r | cut -d " " -f 2-<ret><a-s>_'
+  execute-keys -save-regs '' '*'
   echo -debug crystal %arg{1} as regex:
   echo -debug -quoting kakoune %val{main_reg_slash}
 }
@@ -403,17 +550,12 @@ define-command -override -hidden crystal-check-news %{
   execute-keys '%1<s>check_ident_or_keyword\(:(%opt{crystal_word_pattern}<a-!>),\h+\w+\)<ret>Z%1<s>@token\.value\h+=\h+:(%opt{crystal_word_pattern}<a-!>)<ret><a-z>a'
   crystal-buffer-build-result-with-static-words keywords
 
-  # Operators ⇒ https://github.com/crystal-lang/crystal/blob/master/src/compiler/crystal/syntax/parser.cr
-  execute-keys '%|curl -sSL https://github.com/crystal-lang/crystal/raw/master/src/compiler/crystal/syntax/parser.cr<ret>'
-  execute-keys '%<a-s><a-k>AtomicWithMethodCheck\h+=<ret>1<s>:"([^"\[]+)"<ret>Z%<a-s><a-k>(check|when)\h+:<ret>1<s>:"([^"]{2,3})"<ret><a-z>a'
-  crystal-buffer-build-result operators
-
   # Top Level Namespace
   # https://crystal-lang.org/api/master/toplevel.html#method-summary
   # https://crystal-lang.org/api/master/toplevel.html#macro-summary
   execute-keys '%|curl -sSL https://crystal-lang.org/api/master/toplevel.html<ret>'
   execute-keys '%1<s>class="entry-detail"\h+id="(%opt{crystal_word_pattern}<a-!>)[^"]*-(method|macro)"<ret>'
-  crystal-buffer-build-result-with-static-words top-level
+  crystal-buffer-build-result-with-static-words top-level-namespace
 
   # Object macros ⇒ https://crystal-lang.org/api/master/Object.html#macro-summary
   execute-keys '%|curl -sSL https://crystal-lang.org/api/master/Object.html<ret>'
