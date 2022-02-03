@@ -14,7 +14,7 @@ declare-option -docstring 'Crystal indentation rules to decrease the indentation
 
 # Indentation rules
 # https://code.visualstudio.com/api/language-extensions/language-configuration-guide#indentation-rules
-declare-option -docstring 'Crystal indentation rules to increase the indentation of the next line' str crystal_indentation_rules_increase_indent_pattern '[({\[]$|^\h*(if|elsif|else|unless|case|when|case|in|while|until|class|private\h+class|abstract\h+class|private\h+abstract\h+class|def|private\h+def|protected\h+def|module|private\h+module|struct|private\h+struct|abstract\h+struct|private\h+abstract\h+struct|enum|private\h+enum|begin|rescue|ensure|macro|annotation|lib|private\h+lib)'
+declare-option -docstring 'Crystal indentation rules to increase the indentation of the next line' str crystal_indentation_rules_increase_indent_pattern '^[^#]*[({\[]$|^\h*(if|elsif|else|unless|case|when|case|in|while|until|class|private\h+class|abstract\h+class|private\h+abstract\h+class|def|private\h+def|protected\h+def|module|private\h+module|struct|private\h+struct|abstract\h+struct|private\h+abstract\h+struct|enum|private\h+enum|begin|rescue|ensure|macro|annotation|lib|private\h+lib)[^;]*$|^[^#]*\h(do)[^;]*$|^[^#]*=\h*(if|unless|case)[^;]*$'
 declare-option -docstring 'Crystal indentation rules to decrease the indentation of the current line' str crystal_indentation_rules_decrease_indent_pattern '^\h*[)}\]]\z|^\h*(elsif|else|end|when|in|rescue|ensure)\z'
 
 # Reference
@@ -23,23 +23,23 @@ declare-option -docstring 'Crystal indentation rules to decrease the indentation
 #
 # https://crystal-lang.org/reference/master/syntax_and_semantics/if.html
 #
-# if some_condition
+# value = if some_condition
 # elsif some_other_condition
 # else
 # end
 #
 # https://crystal-lang.org/reference/master/syntax_and_semantics/unless.html
 #
-# unless some_condition
+# value = unless some_condition
 # end
 #
 # https://crystal-lang.org/reference/master/syntax_and_semantics/case.html
 #
-# case expression
+# value = case expression
 # when value
 # end
 #
-# case expression
+# value = case expression
 # in value
 # end
 #
@@ -522,10 +522,13 @@ define-crystal-interpolation pipe-command meta '%x\|' '\|'
 #
 # Usage:
 #
-# Fetch a document, select keywords and call `crystal-buffer-build-result keywords`.
+# Fetch a document, select keywords and call `crystal-build-result keywords`.
 #
-define-command -override -hidden crystal-buffer-build-result -params 1 %{
-  execute-keys 'a<ret><esc>y%<a-R>%|sort -u<ret><a-s>_'
+define-command -override -hidden crystal-build-result -params 1 %{
+  execute-keys -save-regs '' 'y'
+  edit -scratch
+
+  execute-keys '%<a-R>a<ret><esc>y%<a-R>%|sort -u<ret><a-s>_'
   echo -debug crystal %arg{1} as str-list:
   echo -debug -quoting kakoune %val{selections}
 
@@ -533,10 +536,12 @@ define-command -override -hidden crystal-buffer-build-result -params 1 %{
   execute-keys -save-regs '' '*'
   echo -debug crystal %arg{1} as regex:
   echo -debug -quoting kakoune %val{main_reg_slash}
+
+  delete-buffer
 }
 
-define-command -override -hidden crystal-buffer-build-result-with-static-words -params 1 %{
-  crystal-buffer-build-result %arg{1}
+define-command -override -hidden crystal-build-result-with-static-words -params 1 %{
+  crystal-build-result %arg{1}
   set-option -add window static_words %val{selections}
 }
 
@@ -548,24 +553,24 @@ define-command -override -hidden crystal-check-news %{
   # Keywords ⇒ https://github.com/crystal-lang/crystal/blob/master/src/compiler/crystal/syntax/lexer.cr
   execute-keys '%|curl -sSL https://github.com/crystal-lang/crystal/raw/master/src/compiler/crystal/syntax/lexer.cr<ret>'
   execute-keys '%1<s>check_ident_or_keyword\(:(%opt{crystal_word_pattern}<a-!>),\h+\w+\)<ret>Z%1<s>@token\.value\h+=\h+:(%opt{crystal_word_pattern}<a-!>)<ret><a-z>a'
-  crystal-buffer-build-result-with-static-words keywords
+  crystal-build-result-with-static-words keywords
 
   # Top Level Namespace
   # https://crystal-lang.org/api/master/toplevel.html#method-summary
   # https://crystal-lang.org/api/master/toplevel.html#macro-summary
   execute-keys '%|curl -sSL https://crystal-lang.org/api/master/toplevel.html<ret>'
   execute-keys '%1<s>class="entry-detail"\h+id="(%opt{crystal_word_pattern}<a-!>)[^"]*-(method|macro)"<ret>'
-  crystal-buffer-build-result-with-static-words top-level-namespace
+  crystal-build-result-with-static-words top-level-namespace
 
   # Object macros ⇒ https://crystal-lang.org/api/master/Object.html#macro-summary
   execute-keys '%|curl -sSL https://crystal-lang.org/api/master/Object.html<ret>'
   execute-keys '%1<s>class="entry-detail"\h+id="(%opt{crystal_word_pattern}<a-!>)[^"]*-(macro)"<ret>'
-  crystal-buffer-build-result-with-static-words object-macros
+  crystal-build-result-with-static-words object-macros
 
   # Static words
   set-register dquote %opt{static_words}
   execute-keys '%<a-R>'
-  crystal-buffer-build-result static_words
+  crystal-build-result static_words
 
   # Show result
   delete-buffer
