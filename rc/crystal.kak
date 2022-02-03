@@ -17,7 +17,6 @@ declare-option -docstring 'Crystal indentation rules to decrease the indentation
 
 # Indentation rules
 # https://code.visualstudio.com/api/language-extensions/language-configuration-guide#indentation-rules
-#
 declare-option -docstring 'Crystal indentation rules to increase the indentation of the next line' str crystal_indentation_rules_increase_indent_pattern '^[^#]*[({\[]$|^\h*(if|elsif|else|unless|case|when|case|in|while|until|class|private\h+class|abstract\h+class|private\h+abstract\h+class|def|private\h+def|protected\h+def|module|private\h+module|struct|private\h+struct|abstract\h+struct|private\h+abstract\h+struct|enum|private\h+enum|begin|rescue|ensure|macro|annotation|lib|private\h+lib)[^;]*$|^[^#]*\h(do)[^;]*$|^[^#]*=\h*(if|unless|case)[^;]*$'
 declare-option -docstring 'Crystal indentation rules to decrease the indentation of the current line' str crystal_indentation_rules_decrease_indent_pattern '^\h*[)}\]]\z|^\h*(elsif|else|end|when|in|rescue|ensure)\z'
 
