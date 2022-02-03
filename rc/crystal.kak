@@ -525,6 +525,7 @@ define-crystal-interpolation pipe-command meta '%x\|' '\|'
 # Fetch a document, select keywords and call `crystal-build-result keywords`.
 #
 define-command -override -hidden crystal-build-result -params 1 %{
+  # Initialization
   execute-keys -save-regs '' 'y'
   edit -scratch
 
@@ -537,6 +538,7 @@ define-command -override -hidden crystal-build-result -params 1 %{
   echo -debug crystal %arg{1} as regex:
   echo -debug -quoting kakoune %val{main_reg_slash}
 
+  # Cleanup
   delete-buffer
 }
 
@@ -547,7 +549,7 @@ define-command -override -hidden crystal-build-result-with-static-words -params 
 
 define-command -override -hidden crystal-check-news %{
   # Initialization
-  edit! -scratch '*crystal*'
+  edit -scratch
   set-option window static_words
 
   # Keywords ⇒ https://github.com/crystal-lang/crystal/blob/master/src/compiler/crystal/syntax/lexer.cr
@@ -572,8 +574,6 @@ define-command -override -hidden crystal-check-news %{
   execute-keys '%<a-R>'
   crystal-build-result static_words
 
-  # Show result
+  # Cleanup
   delete-buffer
-  buffer '*debug*'
-  execute-keys 'gj'
 }
