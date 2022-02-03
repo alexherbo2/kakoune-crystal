@@ -202,25 +202,21 @@ define-command -override -hidden crystal-indent-on-inserted-character %{
       # Clean previous line indent
       try %[ execute-keys -draft '<a-x>s^\h+$<ret>d' ]
 
+      # Increase the indentation of the next line
       try %{
-        # Increase the indentation of the next line
         execute-keys -draft '<a-h><a-k>%opt{crystal_indentation_rules_increase_indent_pattern}<a-!><ret>'
         execute-keys -draft 'l<a-gt>'
-      } catch %{
-        # Decrease the indentation of the next line
       }
     } catch %{
       # Indent at the end of the line
       execute-keys -draft 'l<a-k>\n<ret>'
 
+      # Decrease the indentation of the current line
       try %{
-        # Decrease the indentation of the current line
         execute-keys -draft '<a-h><a-k>%opt{crystal_indentation_rules_decrease_indent_pattern}<a-!><ret>'
         execute-keys -draft '<lt>'
-      } catch %{
-        # Increase the indentation of the current line
       }
-    }
+    } catch %{}
   }
 }
 
