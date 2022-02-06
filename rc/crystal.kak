@@ -416,7 +416,7 @@ define-crystal-raw-string character value "'" "(?<!\\)(\\\\)*'"
 # double quote ⇒ "\""
 # backslash ⇒ "\\"
 #
-define-crystal-string-interpolation string string '"' '(?<!\\)(\\\\)*"'
+define-crystal-string-interpolation interpolated-string-with-double-quotes string '"' '(?<!\\)(\\\\)*"'
 
 # Percent string literals ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -428,11 +428,11 @@ define-crystal-string-interpolation string string '"' '(?<!\\)(\\\\)*"'
 # name = "world"
 # puts %Q(hello #{name})
 #
-define-crystal-string-interpolation parenthesis-string string -recurse '\(' '%Q?\(' '\)'
-define-crystal-string-interpolation bracket-string string -recurse '\[' '%Q?\[' '\]'
-define-crystal-string-interpolation brace-string string -recurse '\{' '%Q?\{' '\}'
-define-crystal-string-interpolation angle-string string -recurse '<' '%Q?<' '>'
-define-crystal-string-interpolation pipe-string string '%Q?\|' '\|'
+define-crystal-string-interpolation interpolated-string-with-percent-parentheses string -recurse '\(' '%Q?\(' '\)'
+define-crystal-string-interpolation interpolated-string-with-percent-brackets string -recurse '\[' '%Q?\[' '\]'
+define-crystal-string-interpolation interpolated-string-with-percent-braces string -recurse '\{' '%Q?\{' '\}'
+define-crystal-string-interpolation interpolated-string-with-percent-angles string -recurse '<' '%Q?<' '>'
+define-crystal-string-interpolation interpolated-string-with-percent-pipes string '%Q?\|' '\|'
 
 # Raw percent string literals ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -445,11 +445,11 @@ define-crystal-string-interpolation pipe-string string '%Q?\|' '\|'
 #
 # puts %q(hello world)
 #
-define-crystal-raw-string raw-parenthesis-string string -recurse '\(' '%[qwi]\(' '\)'
-define-crystal-raw-string raw-bracket-string string -recurse '\[' '%[qwi]\[' '\]'
-define-crystal-raw-string raw-brace-string string -recurse '\{' '%[qwi]\{' '\}'
-define-crystal-raw-string raw-angle-string string -recurse '<' '%[qwi]<' '>'
-define-crystal-raw-string raw-pipe-string string '%[qwi]\|' '\|'
+define-crystal-raw-string raw-string-with-percent-parentheses string -recurse '\(' '%[qwi]\(' '\)'
+define-crystal-raw-string raw-string-with-percent-brackets string -recurse '\[' '%[qwi]\[' '\]'
+define-crystal-raw-string raw-string-with-percent-braces string -recurse '\{' '%[qwi]\{' '\}'
+define-crystal-raw-string raw-string-with-percent-angles string -recurse '<' '%[qwi]<' '>'
+define-crystal-raw-string raw-string-with-percent-pipes string '%[qwi]\|' '\|'
 
 # Here document ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -461,7 +461,7 @@ define-crystal-raw-string raw-pipe-string string '%[qwi]\|' '\|'
 # <<-'EOF'
 # EOF
 #
-define-crystal-string-interpolation heredoc string -match-capture '<<-(\w+)' '^\h*(\w+)$'
+define-crystal-string-interpolation interpolated-heredoc string -match-capture '<<-(\w+)' '^\h*(\w+)$'
 define-crystal-raw-string raw-heredoc string -match-capture "<<-'(\w+)'" '^\h*(\w+)$'
 
 # Symbols ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
@@ -488,7 +488,7 @@ define-crystal-raw-string quoted-symbol value ':"' '(?<!\\)(\\\\)*"'
 #
 # /foo/i.match("FOO")
 #
-define-crystal-string-interpolation regex meta '/' '(?<!\\)(\\\\)*/[imx]*'
+define-crystal-string-interpolation interpolated-regex meta '/' '(?<!\\)(\\\\)*/[imx]*'
 
 # Note: Avoid unterminated regular expression and floor division as regex.
 #
@@ -506,11 +506,11 @@ add-highlighter -override shared/crystal/division-as-region/operator regex '//?'
 #
 # %r(foo|bar)
 #
-define-crystal-string-interpolation parenthesis-regex meta -recurse '\(' '%r\(' '\)[imx]*'
-define-crystal-string-interpolation bracket-regex meta -recurse '\[' '%r\[' '\][imx]*'
-define-crystal-string-interpolation brace-regex meta -recurse '\{' '%r\{' '\}[imx]*'
-define-crystal-string-interpolation angle-regex meta -recurse '<' '%r<' '>[imx]*'
-define-crystal-string-interpolation pipe-regex meta '%r\|' '\|[imx]*'
+define-crystal-string-interpolation interpolated-regex-with-percent-parentheses meta -recurse '\(' '%r\(' '\)[imx]*'
+define-crystal-string-interpolation interpolated-regex-with-percent-brackets meta -recurse '\[' '%r\[' '\][imx]*'
+define-crystal-string-interpolation interpolated-regex-with-percent-braces meta -recurse '\{' '%r\{' '\}[imx]*'
+define-crystal-string-interpolation interpolated-regex-with-percent-angles meta -recurse '<' '%r<' '>[imx]*'
+define-crystal-string-interpolation interpolated-regex-with-percent-pipes meta '%r\|' '\|[imx]*'
 
 # Command literal ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
