@@ -347,21 +347,20 @@ add-highlighter -override shared/crystal/comment/directive regex ':\w+:' 0:meta
 # https://crystal-lang.org/reference/master/syntax_and_semantics/literals/string.html#interpolation
 # https://crystal-lang.org/reference/master/syntax_and_semantics/literals/string.html#escaping
 
-# Defines Crystal interpolation.
+# Defines Crystal raw string.
 #
 # Syntax:
 #
-# define-crystal-interpolation <region-name> <face-name> [<region-switches>] <opening-pattern> <closing-pattern>
+# define-crystal-raw-string <region-name> <face-name> [<region-switches>] <opening-pattern> <closing-pattern>
 #
 # Example:
 #
-# define-crystal-interpolation parenthesis-string string -recurse '\(' '%\(' '\)'
+# define-crystal-raw-string raw-parenthesis-string string -recurse '\(' '%q\(' '\)'
 #
-# name = "world"
-# puts %(hello #{name})
+# puts %q(hello world)
 #
 declare-option -hidden str-list crystal_optional_arguments
-define-command -override -hidden define-crystal-interpolation -params .. %{
+define-command -override -hidden define-crystal-raw-string -params 4.. %{
   set-option global crystal_optional_arguments %arg{@}
   set-option -remove global crystal_optional_arguments %arg{1} %arg{2}
   add-highlighter -override "shared/crystal/%arg{1}" region %opt{crystal_optional_arguments} regions
@@ -369,6 +368,23 @@ define-command -override -hidden define-crystal-interpolation -params .. %{
   add-highlighter -override "shared/crystal/%arg{1}/content/fill" fill %arg{2}
   add-highlighter -override "shared/crystal/%arg{1}/content/escaped-character" regex '\\.' 0:meta
   add-highlighter -override "shared/crystal/%arg{1}/content/escape-sequence" regex '\\(x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|u\{[0-9a-fA-F]+\})' 0:meta
+}
+
+# Defines Crystal string interpolation.
+#
+# Syntax:
+#
+# define-crystal-string-interpolation <region-name> <face-name> [<region-switches>] <opening-pattern> <closing-pattern>
+#
+# Example:
+#
+# define-crystal-string-interpolation parenthesis-string string -recurse '\(' '%\(' '\)'
+#
+# name = "world"
+# puts %(hello #{name})
+#
+define-command -override -hidden define-crystal-string-interpolation -params 4.. %{
+  define-crystal-raw-string %arg{@}
   add-highlighter -override "shared/crystal/%arg{1}/interpolation" region -recurse '\{' '#\{' '\}' group # }
   add-highlighter -override "shared/crystal/%arg{1}/interpolation/delimiters" regex '(?<opening>..).+(?<closing>.)' opening:meta closing:meta
   add-highlighter -override "shared/crystal/%arg{1}/interpolation/crystal" ref crystal
@@ -385,7 +401,7 @@ define-command -override -hidden define-crystal-interpolation -params .. %{
 # single quote ⇒ '\''
 # backslash ⇒ '\\'
 #
-define-crystal-interpolation character value "'" "(?<!\\)(\\\\)*'"
+define-crystal-raw-string character value "'" "(?<!\\)(\\\\)*'"
 
 # Strings ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -400,7 +416,7 @@ define-crystal-interpolation character value "'" "(?<!\\)(\\\\)*'"
 # double quote ⇒ "\""
 # backslash ⇒ "\\"
 #
-define-crystal-interpolation string string '"' '(?<!\\)(\\\\)*"'
+define-crystal-string-interpolation string string '"' '(?<!\\)(\\\\)*"'
 
 # Percent string literals ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -412,11 +428,11 @@ define-crystal-interpolation string string '"' '(?<!\\)(\\\\)*"'
 # name = "world"
 # puts %Q(hello #{name})
 #
-define-crystal-interpolation parenthesis-string string -recurse '\(' '%Q?\(' '\)'
-define-crystal-interpolation bracket-string string -recurse '\[' '%Q?\[' '\]'
-define-crystal-interpolation brace-string string -recurse '\{' '%Q?\{' '\}'
-define-crystal-interpolation angle-string string -recurse '<' '%Q?<' '>'
-define-crystal-interpolation pipe-string string '%Q?\|' '\|'
+define-crystal-string-interpolation parenthesis-string string -recurse '\(' '%Q?\(' '\)'
+define-crystal-string-interpolation bracket-string string -recurse '\[' '%Q?\[' '\]'
+define-crystal-string-interpolation brace-string string -recurse '\{' '%Q?\{' '\}'
+define-crystal-string-interpolation angle-string string -recurse '<' '%Q?<' '>'
+define-crystal-string-interpolation pipe-string string '%Q?\|' '\|'
 
 # Raw percent string literals ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -429,11 +445,11 @@ define-crystal-interpolation pipe-string string '%Q?\|' '\|'
 #
 # puts %q(hello world)
 #
-add-highlighter -override shared/crystal/raw-parenthesis-string region -recurse '\(' '%[qwi]\(' '\)' fill string
-add-highlighter -override shared/crystal/raw-bracket-string region -recurse '\[' '%[qwi]\[' '\]' fill string
-add-highlighter -override shared/crystal/raw-brace-string region -recurse '\{' '%[qwi]\{' '\}' fill string
-add-highlighter -override shared/crystal/raw-angle-string region -recurse '<' '%[qwi]<' '>' fill string
-add-highlighter -override shared/crystal/raw-pipe-string region '%[qwi]\|' '\|' fill string
+define-crystal-raw-string raw-parenthesis-string string -recurse '\(' '%[qwi]\(' '\)'
+define-crystal-raw-string raw-bracket-string string -recurse '\[' '%[qwi]\[' '\]'
+define-crystal-raw-string raw-brace-string string -recurse '\{' '%[qwi]\{' '\}'
+define-crystal-raw-string raw-angle-string string -recurse '<' '%[qwi]<' '>'
+define-crystal-raw-string raw-pipe-string string '%[qwi]\|' '\|'
 
 # Here document ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -445,8 +461,8 @@ add-highlighter -override shared/crystal/raw-pipe-string region '%[qwi]\|' '\|' 
 # <<-'EOF'
 # EOF
 #
-define-crystal-interpolation heredoc string -match-capture '<<-(\w+)' '^\h*(\w+)$'
-add-highlighter -override shared/crystal/raw-heredoc region -match-capture "<<-'(\w+)'" '^\h*(\w+)$' fill string
+define-crystal-string-interpolation heredoc string -match-capture '<<-(\w+)' '^\h*(\w+)$'
+define-crystal-raw-string raw-heredoc string -match-capture "<<-'(\w+)'" '^\h*(\w+)$'
 
 # Symbols ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -459,7 +475,7 @@ add-highlighter -override shared/crystal/raw-heredoc region -match-capture "<<-'
 #
 # :"quoted symbol"
 #
-add-highlighter -override shared/crystal/quoted-symbol region ':"' '(?<!\\)(\\\\)*"' fill value
+define-crystal-raw-string quoted-symbol value ':"' '(?<!\\)(\\\\)*"'
 
 # Regular expressions ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -472,7 +488,7 @@ add-highlighter -override shared/crystal/quoted-symbol region ':"' '(?<!\\)(\\\\
 #
 # /foo/i.match("FOO")
 #
-define-crystal-interpolation regex meta '/' '(?<!\\)(\\\\)*/[imx]*'
+define-crystal-string-interpolation regex meta '/' '(?<!\\)(\\\\)*/[imx]*'
 
 # Note: Avoid unterminated regular expression and floor division as regex.
 #
@@ -490,11 +506,11 @@ add-highlighter -override shared/crystal/division-as-region/operator regex '//?'
 #
 # %r(foo|bar)
 #
-define-crystal-interpolation parenthesis-regex meta -recurse '\(' '%r\(' '\)[imx]*'
-define-crystal-interpolation bracket-regex meta -recurse '\[' '%r\[' '\][imx]*'
-define-crystal-interpolation brace-regex meta -recurse '\{' '%r\{' '\}[imx]*'
-define-crystal-interpolation angle-regex meta -recurse '<' '%r<' '>[imx]*'
-define-crystal-interpolation pipe-regex meta '%r\|' '\|[imx]*'
+define-crystal-string-interpolation parenthesis-regex meta -recurse '\(' '%r\(' '\)[imx]*'
+define-crystal-string-interpolation bracket-regex meta -recurse '\[' '%r\[' '\][imx]*'
+define-crystal-string-interpolation brace-regex meta -recurse '\{' '%r\{' '\}[imx]*'
+define-crystal-string-interpolation angle-regex meta -recurse '<' '%r<' '>[imx]*'
+define-crystal-string-interpolation pipe-regex meta '%r\|' '\|[imx]*'
 
 # Command literal ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -505,7 +521,7 @@ define-crystal-interpolation pipe-regex meta '%r\|' '\|[imx]*'
 #
 # `echo foo`
 #
-define-crystal-interpolation command meta '`' '(?<!\\)(\\\\)*`'
+define-crystal-string-interpolation command meta '`' '(?<!\\)(\\\\)*`'
 
 # Percent command literals ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -513,11 +529,11 @@ define-crystal-interpolation command meta '`' '(?<!\\)(\\\\)*`'
 #
 # %x(echo foo)
 #
-define-crystal-interpolation parenthesis-command meta -recurse '\(' '%x\(' '\)'
-define-crystal-interpolation bracket-command meta -recurse '\[' '%x\[' '\]'
-define-crystal-interpolation brace-command meta -recurse '\{' '%x\{' '\}'
-define-crystal-interpolation angle-command meta -recurse '<' '%x<' '>'
-define-crystal-interpolation pipe-command meta '%x\|' '\|'
+define-crystal-string-interpolation parenthesis-command meta -recurse '\(' '%x\(' '\)'
+define-crystal-string-interpolation bracket-command meta -recurse '\[' '%x\[' '\]'
+define-crystal-string-interpolation brace-command meta -recurse '\{' '%x\{' '\}'
+define-crystal-string-interpolation angle-command meta -recurse '<' '%x<' '>'
+define-crystal-string-interpolation pipe-command meta '%x\|' '\|'
 
 # What’s new ───────────────────────────────────────────────────────────────────
 
