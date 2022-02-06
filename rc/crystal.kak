@@ -227,6 +227,26 @@ add-highlighter -override shared/crystal/code default-region group
 
 # Syntax and semantics ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
+# Classes
+# Comments
+# Constants
+# Entities
+# Functions/Methods
+# Keywords
+# Language Built-ins
+# Punctuation
+# Storage
+# Strings
+# Variables
+
+# Scope Naming
+# Sublime Text
+# TextMate
+# https://macromates.com/manual/en/language_grammars
+# https://github.com/crystal-lang-tools/vscode-crystal-lang/blob/master/syntaxes/crystal.json
+# https://code.visualstudio.com/api/language-extensions/syntax-highlight-guide
+# https://sublimetext.com/docs/scope_naming.html
+
 # Reference
 # https://crystal-lang.org/reference/master/syntax_and_semantics/
 
