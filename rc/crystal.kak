@@ -542,11 +542,11 @@ add-highlighter -override shared/crystal/division-as-region/operator regex '//?'
 #
 # %r(foo|bar)
 #
-define-crystal-interpolated-string interpolated-regex-with-percent-parentheses meta -recurse '\(' '%r\(' '\)[imx]*'
-define-crystal-interpolated-string interpolated-regex-with-percent-brackets meta -recurse '\[' '%r\[' '\][imx]*'
-define-crystal-interpolated-string interpolated-regex-with-percent-braces meta -recurse '\{' '%r\{' '\}[imx]*'
-define-crystal-interpolated-string interpolated-regex-with-percent-angles meta -recurse '<' '%r<' '>[imx]*'
-define-crystal-interpolated-string interpolated-regex-with-percent-pipes meta '%r\|' '\|[imx]*'
+define-crystal-interpolated-string string.regexp.percent.parenthesis.interpolated meta -recurse '\(' '%r\(' '\)[imx]*'
+define-crystal-interpolated-string string.regexp.percent.bracket.interpolated meta -recurse '\[' '%r\[' '\][imx]*'
+define-crystal-interpolated-string string.regexp.percent.brace.interpolated meta -recurse '\{' '%r\{' '\}[imx]*'
+define-crystal-interpolated-string string.regexp.percent.angle.interpolated meta -recurse '<' '%r<' '>[imx]*'
+define-crystal-interpolated-string string.regexp.percent.pipe.interpolated meta '%r\|' '\|[imx]*'
 
 # Command literal ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -557,7 +557,7 @@ define-crystal-interpolated-string interpolated-regex-with-percent-pipes meta '%
 #
 # `echo foo`
 #
-define-crystal-interpolated-string command meta '`' '(?<!\\)(\\\\)*`'
+define-crystal-interpolated-string string.command meta '`' '(?<!\\)(\\\\)*`'
 
 # Percent command literals ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -565,11 +565,11 @@ define-crystal-interpolated-string command meta '`' '(?<!\\)(\\\\)*`'
 #
 # %x(echo foo)
 #
-define-crystal-interpolated-string parenthesis-command meta -recurse '\(' '%x\(' '\)'
-define-crystal-interpolated-string bracket-command meta -recurse '\[' '%x\[' '\]'
-define-crystal-interpolated-string brace-command meta -recurse '\{' '%x\{' '\}'
-define-crystal-interpolated-string angle-command meta -recurse '<' '%x<' '>'
-define-crystal-interpolated-string pipe-command meta '%x\|' '\|'
+define-crystal-interpolated-string string.command.percent.parenthesis meta -recurse '\(' '%x\(' '\)'
+define-crystal-interpolated-string string.command.percent.bracket meta -recurse '\[' '%x\[' '\]'
+define-crystal-interpolated-string string.command.percent.brace meta -recurse '\{' '%x\{' '\}'
+define-crystal-interpolated-string string.command.percent.angle meta -recurse '<' '%x<' '>'
+define-crystal-interpolated-string string.command.percent.pipe meta '%x\|' '\|'
 
 # What’s new ───────────────────────────────────────────────────────────────────
 
