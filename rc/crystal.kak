@@ -160,10 +160,21 @@ hook -group crystal-indent global WinSetOption filetype=crystal %{
   # Increase and decrease indent with Tab.
   map -docstring 'Increase indent' window insert <tab> '<a-;><a-gt>'
   map -docstring 'Decrease indent' window insert <s-tab> '<a-;><lt>'
+  map -docstring 'Decrease indent or erase character before cursor' window insert <backspace> '<a-;>: decrease-indent-or-erase-character-before-cursor<ret>'
   hook -always -once window WinSetOption 'filetype=.*' %{
     remove-hooks window crystal-indent
     unmap window insert <tab>
     unmap window insert <s-tab>
+  }
+}
+
+# Backspace ⇒ Decrease indent or erase character before cursor.
+define-command -override -hidden decrease-indent-or-erase-character-before-cursor %{
+  try %{
+    execute-keys -draft '<space><a-h><a-k>\A\h+.\z<ret>'
+    execute-keys -draft '<lt>'
+  } catch %{
+    execute-keys -draft ';i<backspace>'
   }
 }
 
