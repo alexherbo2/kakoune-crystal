@@ -221,13 +221,13 @@ define-command -override -hidden crystal-toggle-comments %{
           # considered uncommented.
           # Determines margin of 0 or 1 for uncommenting; if any comment token is not followed by a space
           # a margin of 0 is used for all lines.
-          evaluate-commands -save-regs '"' %{
+          evaluate-commands -save-regs '/' %{
             set-register / "\A\Q%opt{crystal_comment_token} "
             execute-keys -draft -itersel '<a-k><ret>'
             execute-keys -draft 's<ret>d'
           }
         } catch %{
-          evaluate-commands -save-regs '"' %{
+          evaluate-commands -save-regs '/' %{
             set-register / "\A\Q%opt{crystal_comment_token}"
             execute-keys -draft -itersel '<a-k><ret>'
             execute-keys -draft 's<ret>d'
@@ -246,10 +246,10 @@ define-command -override -hidden crystal-toggle-comments %{
           #
           # [<anchor_line>.<anchor_column>,<cursor_line>.<cursor_column>]...
           #
-          select %sh{
+          evaluate-commands %sh{
             leftmost_anchor_column=$(echo "$kak_selections_desc" | tr ' ' '\n' | cut -d ',' -f 1 | cut -d '.' -f 2 | sort -n | head -n 1)
             selections_description=$(echo "$kak_selections_desc" | sed -E "s/\\.[0-9]+,/.${leftmost_anchor_column},/g")
-            echo "$selections_description"
+            printf 'select %s' "$selections_description"
           }
           evaluate-commands -save-regs '"' %{
             set-register dquote "%opt{crystal_comment_token} "
