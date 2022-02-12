@@ -222,17 +222,30 @@ define-command -override -hidden crystal-toggle-comments %{
           # Determines margin of 0 or 1 for uncommenting; if any comment token is not followed by a space
           # a margin of 0 is used for all lines.
           evaluate-commands -save-regs '/' %{
+            set-register / "\A\Q%opt{crystal_comment_token}"
+            execute-keys -draft '<a-K><ret>'
+          }
+          evaluate-commands %sh{
+            leftmost_anchor_column=$(echo "$kak_selections_desc" | tr ' ' '\n' | cut -d ',' -f 1 | cut -d '.' -f 2 | sort -n | head -n 1)
+            selections_description=$(echo "$kak_selections_desc" | sed -E "s/\\.[0-9]+,/.${leftmost_anchor_column},/g")
+            printf 'select %s' "$selections_description"
+          }
+          evaluate-commands -save-regs '"' %{
+            set-register dquote "%opt{crystal_comment_token} "
+            execute-keys P
+          }
+        } catch %{
+          evaluate-commands -save-regs '/' %{
             set-register / "\A\Q%opt{crystal_comment_token} "
-            execute-keys -draft -itersel '<a-k><ret>'
+            execute-keys -draft '<a-K><ret>'
+            set-register / "\A\Q%opt{crystal_comment_token}"
             execute-keys -draft 's<ret>d'
           }
         } catch %{
           evaluate-commands -save-regs '/' %{
-            set-register / "\A\Q%opt{crystal_comment_token}"
-            execute-keys -draft -itersel '<a-k><ret>'
+            set-register / "\A\Q%opt{crystal_comment_token} "
             execute-keys -draft 's<ret>d'
           }
-        } catch %{
           # shouldRemoveComments
           # as soon as one of the non-blank lines doesn’t have a comment, the whole block is
           # considered uncommented.
@@ -246,15 +259,6 @@ define-command -override -hidden crystal-toggle-comments %{
           #
           # [<anchor_line>.<anchor_column>,<cursor_line>.<cursor_column>]...
           #
-          evaluate-commands %sh{
-            leftmost_anchor_column=$(echo "$kak_selections_desc" | tr ' ' '\n' | cut -d ',' -f 1 | cut -d '.' -f 2 | sort -n | head -n 1)
-            selections_description=$(echo "$kak_selections_desc" | sed -E "s/\\.[0-9]+,/.${leftmost_anchor_column},/g")
-            printf 'select %s' "$selections_description"
-          }
-          evaluate-commands -save-regs '"' %{
-            set-register dquote "%opt{crystal_comment_token} "
-            execute-keys P
-          }
         } catch %{}
       }
     }
