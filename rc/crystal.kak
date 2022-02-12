@@ -235,17 +235,10 @@ define-command -override -hidden crystal-toggle-comments %{
             execute-keys P
           }
         } catch %{
-          evaluate-commands -save-regs '/' %{
-            set-register / "\A\Q%opt{crystal_comment_token} "
-            execute-keys -draft '<a-K><ret>'
-            set-register / "\A\Q%opt{crystal_comment_token}"
-            execute-keys -draft 's<ret>d'
-          }
+          execute-keys -draft '<a-K>\A\Q%opt{crystal_comment_token}<a-!><space><ret>'
+          execute-keys -draft '<s>\A\Q%opt{crystal_comment_token}<a-!><ret><d>'
         } catch %{
-          evaluate-commands -save-regs '/' %{
-            set-register / "\A\Q%opt{crystal_comment_token} "
-            execute-keys -draft 's<ret>d'
-          }
+          execute-keys -draft '<s>\A\Q%opt{crystal_comment_token}<a-!><space><ret><d>'
           # shouldRemoveComments
           # as soon as one of the non-blank lines doesn’t have a comment, the whole block is
           # considered uncommented.
