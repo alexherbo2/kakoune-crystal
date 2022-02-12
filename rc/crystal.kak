@@ -12,12 +12,7 @@ declare-option -docstring 'Crystal word pattern' str crystal_word_pattern '\w+[?
 declare-option -docstring 'Crystal indentation rules to increase the indentation of the current line or next line' str crystal_indentation_rules_increase_indent_pattern '^[^#]*[({\[]$|^\h*(if|elsif|else|unless|case|when|case|in|while|until|class|private\h+class|abstract\h+class|private\h+abstract\h+class|def|private\h+def|protected\h+def|module|private\h+module|struct|private\h+struct|abstract\h+struct|private\h+abstract\h+struct|enum|private\h+enum|begin|rescue|ensure|macro|annotation|lib|private\h+lib)[^;]*$|^[^#]*\h(do)[^;]*$|^[^#]*=\h*(if|unless|case)[^;]*$'
 declare-option -docstring 'Crystal indentation rules to decrease the indentation of the current line or next line' str crystal_indentation_rules_decrease_indent_pattern '^\h*[)}\]]\z|^\h*(elsif|else|end|when|in|rescue|ensure)\z'
 
-# toggle_comments
-# comment-token
-# toggle_line_comments
-# https://github.com/helix-editor/helix/blob/master/helix-core/src/comment.rs
-# select_to_line_begin
-declare-option -docstring 'Crystal indentation rules to increase the indentation of the current line or next line' str crystal_indentation_rules_increase_indent_pattern '^[^#]*[({\[]$|^\h*(if|elsif|else|unless|case|when|case|in|while|until|class|private\h+class|abstract\h+class|private\h+abstract\h+class|def|private\h+def|protected\h+def|module|private\h+module|struct|private\h+struct|abstract\h+struct|private\h+abstract\h+struct|enum|private\h+enum|begin|rescue|ensure|macro|annotation|lib|private\h+lib)[^;]*$|^[^#]*\h(do)[^;]*$|^[^#]*=\h*(if|unless|case)[^;]*$'
+declare-option -docstring 'Crystal comment token' str crystal_comment_token '#'
 
 # Reference
 #
@@ -199,6 +194,13 @@ hook -group crystal-config global WinSetOption filetype=crystal %{
 
 # Indentation ──────────────────────────────────────────────────────────────────
 
+# toggle_comments
+# comment-token
+# toggle_line_comments
+# https://github.com/helix-editor/helix/blob/master/helix-core/src/comment.rs
+# select_to_line_begin
+define-command -override -hidden crystal-toggle-comments %{
+}
 define-command -override -hidden crystal-indent-on-inserted-character %{
   evaluate-commands -draft -itersel %{
   }
