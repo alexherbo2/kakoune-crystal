@@ -201,8 +201,11 @@ hook -group crystal-config global WinSetOption filetype=crystal %{
 
 define-command -override -hidden crystal-indent-on-inserted-character %{
   evaluate-commands -draft -itersel %{
+  }
+  evaluate-commands -draft -itersel %{
     # Select inserted character
-    execute-keys h
+    # merging
+    execute-keys 'h<a-h><a-:>'
 
     try %{
       # Indentation rules when inserting a new line
