@@ -184,9 +184,11 @@ define-command -override -hidden decrease-indent-or-erase-character-before-curso
 # `static_words` option is generated with `crystal-check-news`.
 remove-hooks global crystal-config
 hook -group crystal-config global WinSetOption filetype=crystal %{
+  map -docstring 'Toggle comments' window normal '#' ': crystal-toggle-comments<ret>'
   set-option buffer extra_word_chars '_' '?' '!'
   set-option window static_words 'abort' 'abstract' 'alias' 'annotation' 'as' 'as?' 'asm' 'at_exit' 'begin' 'break' 'caller' 'case' 'class' 'class_getter' 'class_getter!' 'class_getter?' 'class_property' 'class_property!' 'class_property?' 'class_setter' 'debugger' 'def' 'def_clone' 'def_equals' 'def_equals_and_hash' 'def_hash' 'delegate' 'do' 'else' 'elsif' 'end' 'ensure' 'enum' 'exit' 'extend' 'false' 'for' 'forward_missing_to' 'fun' 'gets' 'getter' 'getter!' 'getter?' 'if' 'in' 'include' 'instance_sizeof' 'is_a?' 'lib' 'loop' 'macro' 'main' 'module' 'next' 'nil' 'nil?' 'of' 'offsetof' 'out' 'p' 'p!' 'pointerof' 'pp' 'pp!' 'print' 'printf' 'private' 'property' 'property!' 'property?' 'protected' 'puts' 'raise' 'raise_without_backtrace' 'rand' 'read_line' 'record' 'require' 'rescue' 'responds_to?' 'return' 'select' 'self' 'setter' 'sizeof' 'sleep' 'spawn' 'sprintf' 'struct' 'super' 'system' 'then' 'timeout_select_action' 'true' 'type' 'typeof' 'uninitialized' 'union' 'unless' 'until' 'verbatim' 'when' 'while' 'with' 'yield'
   hook -always -once window WinSetOption 'filetype=.*' %{
+    unmap window normal '#'
     unset-option buffer extra_word_chars
     unset-option window static_words
   }
@@ -199,47 +201,102 @@ hook -group crystal-config global WinSetOption filetype=crystal %{
 # toggle_line_comments
 # https://github.com/helix-editor/helix/blob/master/helix-core/src/comment.rs
 # select_to_line_begin
+# https://github.com/microsoft/vscode/blob/main/src/vs/editor/contrib/comment/browser/lineCommentCommand.ts
 define-command -override -hidden crystal-toggle-comments %{
+  evaluate-commands -draft %{
+    # Select whole lines.
+    execute-keys '<a-x>'
+
+    evaluate-commands -draft -itersel %{
+      try %{
+        # Select the content of the lines, without indentation.
+        # Blank lines and blank comments don’t get pushed.
+        execute-keys '<a-s>'
+        execute-keys '<a-K>^\h*$|^\h*\Q%opt{crystal_comment_token}<a-!>\E\h*$<ret>'
+        execute-keys 'giGl'
+
+        try %{
+          # shouldRemoveComments
+          # as soon as one of the non-blank lines doesn’t have a comment, the whole block is
+          # considered uncommented.
+          # Determines margin of 0 or 1 for uncommenting; if any comment token is not followed by a space
+          # a margin of 0 is used for all lines.
+          evaluate-commands -save-regs '"' %{
+            set-register / "\A\Q%opt{crystal_comment_token} "
+            execute-keys -draft -itersel '<a-k><ret>'
+            execute-keys -draft 's<ret>d'
+          }
+        } catch %{
+          evaluate-commands -save-regs '"' %{
+            set-register / "\A\Q%opt{crystal_comment_token}"
+            execute-keys -draft -itersel '<a-k><ret>'
+            execute-keys -draft 's<ret>d'
+          }
+        } catch %{
+          # shouldRemoveComments
+          # as soon as one of the non-blank lines doesn’t have a comment, the whole block is
+          # considered uncommented.
+          # column to place tokens at otherwise
+          # minimum col for find_first_non_whitespace_char
+          # execute-keys -draft -itersel '<a-k>\A\Q%opt{crystal_comment_token}<a-!><ret>'
+          # Indentation rules when inserting a character at the end of line
+          # extend selections to the left to align with the leftmost selected column
+          #
+          # Selections description format is a space-separated string of:
+          #
+          # [<anchor_line>.<anchor_column>,<cursor_line>.<cursor_column>]...
+          #
+          select %sh{
+            leftmost_anchor_column=$(echo "$kak_selections_desc" | tr ' ' '\n' | cut -d ',' -f 1 | cut -d '.' -f 2 | sort -n | head -n 1)
+            selections_description=$(echo "$kak_selections_desc" | sed -E "s/\\.[0-9]+,/.${leftmost_anchor_column},/g")
+            echo "$selections_description"
+          }
+          evaluate-commands -save-regs '"' %{
+            set-register dquote "%opt{crystal_comment_token} "
+            execute-keys P
+          }
+        } catch %{}
+      }
+    }
+  }
 }
 define-command -override -hidden crystal-indent-on-inserted-character %{
-  evaluate-commands -draft -itersel %{
-  }
-  evaluate-commands -draft -itersel %{
-    # Select inserted character
-    # merging
-    # potential
+  evaluate-commands -draft %{
+    # Select line begin to the rightmost inserted character.
     execute-keys 'h<a-h><a-:>'
 
-    try %{
-      # Indentation rules when inserting a new line
-      execute-keys -draft '<a-k>\n<ret>'
-      # Copy previous line indent
-      execute-keys -draft 'L<a-&>'
-      # Clean previous line indent
-      try %[ execute-keys -draft '<a-x>s^\h+$<ret>d' ]
-
-      # Increase the indentation of the next line
+    evaluate-commands -draft -itersel %{
       try %{
-        execute-keys -draft '<a-h><a-k>%opt{crystal_indentation_rules_increase_indent_pattern}<a-!><ret>'
-        execute-keys -draft 'l<a-gt>'
-      }
+        # Indentation rules when inserting a new line
+        execute-keys -draft '<a-k>\n<ret>'
+        # Copy previous line indent
+        execute-keys -draft 'L<a-&>'
+        # Clean previous line indent
+        try %[ execute-keys -draft 's^\h+$<ret>d' ]
 
-      # Decrease the indentation of the next line
-      # when inserting a new line in the middle of line
-      try %{
-        execute-keys -draft 'l<a-x>_;<a-h><a-k>%opt{crystal_indentation_rules_decrease_indent_pattern}<a-!><ret>'
-        execute-keys -draft 'l<lt>'
-      }
-    } catch %{
-      # Indentation rules when inserting a character at the end of line
-      execute-keys -draft 'l<a-k>\n<ret>'
+        # Increase the indentation of the next line
+        try %{
+          execute-keys -draft '<a-k>%opt{crystal_indentation_rules_increase_indent_pattern}<a-!><ret>'
+          execute-keys -draft 'l<a-gt>'
+        }
 
-      # Decrease the indentation of the current line
-      try %{
-        execute-keys -draft '<a-h><a-k>%opt{crystal_indentation_rules_decrease_indent_pattern}<a-!><ret>'
-        execute-keys -draft '<lt>'
-      }
-    } catch %{}
+        # Decrease the indentation of the next line
+        # when inserting a new line in the middle of line
+        try %{
+          execute-keys -draft 'l<a-x><a-k>%opt{crystal_indentation_rules_decrease_indent_pattern}<a-!><ret>'
+          execute-keys -draft 'l<lt>'
+        }
+      } catch %{
+        # Indentation rules when inserting a character at the end of line
+        execute-keys -draft 'l<a-k>\n<ret>'
+
+        # Decrease the indentation of the current line
+        try %{
+          execute-keys -draft 'L<a-k>%opt{crystal_indentation_rules_decrease_indent_pattern}<a-!><ret>'
+          execute-keys -draft '<lt>'
+        }
+      } catch %{}
+    }
   }
 }
 
