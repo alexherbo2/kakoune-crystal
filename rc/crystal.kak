@@ -205,6 +205,7 @@ define-command -override -hidden crystal-indent-on-inserted-character %{
   evaluate-commands -draft -itersel %{
     # Select inserted character
     # merging
+    # potential
     execute-keys 'h<a-h><a-:>'
 
     try %{
