@@ -201,6 +201,7 @@ hook -group crystal-config global WinSetOption filetype=crystal %{
 # toggle_line_comments
 # https://github.com/helix-editor/helix/blob/master/helix-core/src/comment.rs
 # select_to_line_begin
+# select_to_line_begin
 # https://github.com/microsoft/vscode/blob/main/src/vs/editor/contrib/comment/browser/lineCommentCommand.ts
 define-command -override -hidden crystal-toggle-comments %{
   evaluate-commands -draft %{
