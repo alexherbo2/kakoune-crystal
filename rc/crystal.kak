@@ -220,12 +220,9 @@ define-command -override -hidden crystal-toggle-comments %{
           # shouldRemoveComments
           # as soon as one of the non-blank lines doesn’t have a comment, the whole block is
           # considered uncommented.
-          # Determines margin of 0 or 1 for uncommenting; if any comment token is not followed by a space
-          # a margin of 0 is used for all lines.
-          evaluate-commands -save-regs '/' %{
-            set-register / "\A\Q%opt{crystal_comment_token}"
-            execute-keys -draft '<a-K><ret>'
-          }
+          execute-keys '<a-K>\A\Q%opt{crystal_comment_token}<a-!><ret>'
+
+          # Comment lines
           evaluate-commands %sh{
             leftmost_anchor_column=$(echo "$kak_selections_desc" | tr ' ' '\n' | cut -d ',' -f 1 | cut -d '.' -f 2 | sort -n | head -n 1)
             selections_description=$(echo "$kak_selections_desc" | sed -E "s/\\.[0-9]+,/.${leftmost_anchor_column},/g")
@@ -236,6 +233,9 @@ define-command -override -hidden crystal-toggle-comments %{
             execute-keys P
           }
         } catch %{
+          # Uncomment lines
+          # Determines margin of 0 or 1 for uncommenting; if any comment token is not followed by a space
+          # a margin of 0 is used for all lines.
           execute-keys -draft '<a-K>\A\Q%opt{crystal_comment_token}<a-!><space><ret>'
           execute-keys -draft '<s>\A\Q%opt{crystal_comment_token}<a-!><ret><d>'
         } catch %{
@@ -503,7 +503,12 @@ define-command -override -hidden define-crystal-interpolated-string -params 4.. 
 # single quote ⇒ '\''
 # backslash ⇒ '\\'
 #
-define-crystal-string string.character value "'" "(?<!\\)(\\\\)*'"
+add-highlighter -override shared/crystal/string region "'" "(?<!\\)(\\\\)*'" regions
+add-highlighter -override shared/crystal/string/content default-region group
+add-highlighter -override shared/crystal/string/content/fill fill value
+add-highlighter -override shared/crystal/string/content/escaped-character regex '\\.' 0:meta
+add-highlighter -override shared/crystal/string/content/escape-sequence regex '\\(x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|u\{[0-9a-fA-F]+\})' 0:meta
+# define-crystal-string string.character value "'" "(?<!\\)(\\\\)*'"
 
 # Strings ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -518,7 +523,15 @@ define-crystal-string string.character value "'" "(?<!\\)(\\\\)*'"
 # double quote ⇒ "\""
 # backslash ⇒ "\\"
 #
-define-crystal-interpolated-string string.quoted.double string '"' '(?<!\\)(\\\\)*"'
+add-highlighter -override shared/crystal/string.interpolated region '"' '(?<!\\)(\\\\)*"' regions
+add-highlighter -override shared/crystal/string.interpolated/content default-region group
+add-highlighter -override shared/crystal/string.interpolated/content/fill fill string
+add-highlighter -override shared/crystal/string.interpolated/content/escaped-character ref crystal/string/content/escaped-character
+add-highlighter -override shared/crystal/string.interpolated/content/escape-sequence ref crystal/string/content/escape-sequence
+add-highlighter -override shared/crystal/string.interpolated/interpolation region -recurse '\{' '#\{' '\}' group
+add-highlighter -override shared/crystal/string.interpolated/interpolation/delimiters regex '(?<opening>..).+(?<closing>.)' opening:meta closing:meta
+add-highlighter -override shared/crystal/string.interpolated/interpolation/crystal ref crystal
+# define-crystal-interpolated-string string.quoted.double string '"' '(?<!\\)(\\\\)*"'
 
 # Percent string literals ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -530,11 +543,11 @@ define-crystal-interpolated-string string.quoted.double string '"' '(?<!\\)(\\\\
 # name = "world"
 # puts %Q(hello #{name})
 #
-define-crystal-interpolated-string string.quoted.percent.parenthesis.interpolated string -recurse '\(' '%Q?\(' '\)'
-define-crystal-interpolated-string string.quoted.percent.bracket.interpolated string -recurse '\[' '%Q?\[' '\]'
-define-crystal-interpolated-string string.quoted.percent.brace.interpolated string -recurse '\{' '%Q?\{' '\}'
-define-crystal-interpolated-string string.quoted.percent.angle.interpolated string -recurse '<' '%Q?<' '>'
-define-crystal-interpolated-string string.quoted.percent.pipe.interpolated string '%Q?\|' '\|'
+add-highlighter -override shared/crystal/string.quoted.percent.parenthesis.interpolated region -recurse '\(' '%Q?\(' '\)' ref crystal/string.interpolated
+add-highlighter -override shared/crystal/string.quoted.percent.bracket.interpolated region -recurse '\[' '%Q?\[' '\]' ref crystal/string.interpolated
+add-highlighter -override shared/crystal/string.quoted.percent.brace.interpolated region -recurse '\{' '%Q?\{' '\}' ref crystal/string.interpolated
+add-highlighter -override shared/crystal/string.quoted.percent.angle.interpolated region -recurse '<' '%Q?<' '>' ref crystal/string.interpolated
+add-highlighter -override shared/crystal/string.quoted.percent.pipe.interpolated region '%Q?\|' '\|' ref crystal/string.interpolated
 
 # Raw percent string literals ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -547,11 +560,11 @@ define-crystal-interpolated-string string.quoted.percent.pipe.interpolated strin
 #
 # puts %q(hello world)
 #
-define-crystal-string string.quoted.percent.parenthesis string -recurse '\(' '%[qwi]\(' '\)'
-define-crystal-string string.quoted.percent.bracket string -recurse '\[' '%[qwi]\[' '\]'
-define-crystal-string string.quoted.percent.brace string -recurse '\{' '%[qwi]\{' '\}'
-define-crystal-string string.quoted.percent.angle string -recurse '<' '%[qwi]<' '>'
-define-crystal-string string.quoted.percent.pipe string '%[qwi]\|' '\|'
+add-highlighter -override shared/crystal/string.quoted.percent.parenthesis region -recurse '\(' '%[qwi]\(' '\)' ref crystal/string
+add-highlighter -override shared/crystal/string.quoted.percent.bracket region -recurse '\[' '%[qwi]\[' '\]' ref crystal/string
+add-highlighter -override shared/crystal/string.quoted.percent.brace region -recurse '\{' '%[qwi]\{' '\}' ref crystal/string
+add-highlighter -override shared/crystal/string.quoted.percent.angle region -recurse '<' '%[qwi]<' '>' ref crystal/string
+add-highlighter -override shared/crystal/string.quoted.percent.pipe region '%[qwi]\|' '\|' ref crystal/string
 
 # Here document ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -563,8 +576,8 @@ define-crystal-string string.quoted.percent.pipe string '%[qwi]\|' '\|'
 # <<-'EOF'
 # EOF
 #
-define-crystal-interpolated-string string.unquoted.heredoc.interpolated string -match-capture '<<-(\w+)' '^\h*(\w+)$'
-define-crystal-string string.unquoted.heredoc.raw string -match-capture "<<-'(\w+)'" '^\h*(\w+)$'
+add-highlighter -override shared/crystal/string.unquoted.heredoc.interpolated region -match-capture '<<-(\w+)' '^\h*(\w+)$' ref crystal/string.interpolated
+add-highlighter -override shared/crystal/string.unquoted.heredoc.raw region -match-capture "<<-'(\w+)'" '^\h*(\w+)$' ref crystal/string
 
 # Symbols ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -578,7 +591,7 @@ define-crystal-string string.unquoted.heredoc.raw string -match-capture "<<-'(\w
 # :"quoted symbol"
 #
 add-highlighter -override shared/crystal/code/constant.symbol regex ":%opt{crystal_word_pattern}" 0:value
-define-crystal-string string.symbol value ':"' '(?<!\\)(\\\\)*"'
+add-highlighter -override shared/crystal/string.symbol region ':"' '(?<!\\)(\\\\)*"' ref crystal/string
 
 # Regular expressions ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -591,7 +604,14 @@ define-crystal-string string.symbol value ':"' '(?<!\\)(\\\\)*"'
 #
 # /foo/i.match("FOO")
 #
-define-crystal-interpolated-string string.regexp.interpolated meta '/' '(?<!\\)(\\\\)*/[imx]*'
+add-highlighter -override shared/crystal/string.regexp.interpolated region '/' '(?<!\\)(\\\\)*/[imx]*' regions
+add-highlighter -override shared/crystal/string.regexp.interpolated/content default-region group
+add-highlighter -override shared/crystal/string.regexp.interpolated/content/fill fill meta
+add-highlighter -override shared/crystal/string.regexp.interpolated/content/escaped-character ref crystal/string/content/escaped-character
+add-highlighter -override shared/crystal/string.regexp.interpolated/content/escape-sequence ref crystal/string/content/escape-sequence
+add-highlighter -override shared/crystal/string.regexp.interpolated/interpolation region -recurse '\{' '#\{' '\}' group
+add-highlighter -override shared/crystal/string.regexp.interpolated/interpolation/delimiters ref crystal/string.interpolated/interpolation/delimiters
+add-highlighter -override shared/crystal/string.regexp.interpolated/interpolation/crystal ref crystal
 
 # Note: Avoid unterminated regular expression and floor division as regex.
 #
@@ -609,11 +629,11 @@ add-highlighter -override shared/crystal/division-as-region/operator regex '//?'
 #
 # %r(foo|bar)
 #
-define-crystal-interpolated-string string.regexp.percent.parenthesis.interpolated meta -recurse '\(' '%r\(' '\)[imx]*'
-define-crystal-interpolated-string string.regexp.percent.bracket.interpolated meta -recurse '\[' '%r\[' '\][imx]*'
-define-crystal-interpolated-string string.regexp.percent.brace.interpolated meta -recurse '\{' '%r\{' '\}[imx]*'
-define-crystal-interpolated-string string.regexp.percent.angle.interpolated meta -recurse '<' '%r<' '>[imx]*'
-define-crystal-interpolated-string string.regexp.percent.pipe.interpolated meta '%r\|' '\|[imx]*'
+add-highlighter -override shared/crystal/string.regexp.percent.parenthesis.interpolated region -recurse '\(' '%r\(' '\)[imx]*' ref crystal/string.regexp.interpolated
+add-highlighter -override shared/crystal/string.regexp.percent.bracket.interpolated region -recurse '\[' '%r\[' '\][imx]*' ref crystal/string.regexp.interpolated
+add-highlighter -override shared/crystal/string.regexp.percent.brace.interpolated region -recurse '\{' '%r\{' '\}[imx]*' ref crystal/string.regexp.interpolated
+add-highlighter -override shared/crystal/string.regexp.percent.angle.interpolated region -recurse '<' '%r<' '>[imx]*' ref crystal/string.regexp.interpolated
+add-highlighter -override shared/crystal/string.regexp.percent.pipe.interpolated region '%r\|' '\|[imx]*' ref crystal/string.regexp.interpolated
 
 # Command literal ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -624,7 +644,7 @@ define-crystal-interpolated-string string.regexp.percent.pipe.interpolated meta 
 #
 # `echo foo`
 #
-define-crystal-interpolated-string string.command meta '`' '(?<!\\)(\\\\)*`'
+add-highlighter -override shared/crystal/string.command region '`' '(?<!\\)(\\\\)*`' ref crystal/string.regexp.interpolated
 
 # Percent command literals ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
 
@@ -632,11 +652,11 @@ define-crystal-interpolated-string string.command meta '`' '(?<!\\)(\\\\)*`'
 #
 # %x(echo foo)
 #
-define-crystal-interpolated-string string.command.percent.parenthesis meta -recurse '\(' '%x\(' '\)'
-define-crystal-interpolated-string string.command.percent.bracket meta -recurse '\[' '%x\[' '\]'
-define-crystal-interpolated-string string.command.percent.brace meta -recurse '\{' '%x\{' '\}'
-define-crystal-interpolated-string string.command.percent.angle meta -recurse '<' '%x<' '>'
-define-crystal-interpolated-string string.command.percent.pipe meta '%x\|' '\|'
+add-highlighter -override shared/crystal/string.command.percent.parenthesis region -recurse '\(' '%x\(' '\)' ref crystal/string.regexp.interpolated
+add-highlighter -override shared/crystal/string.command.percent.bracket region -recurse '\[' '%x\[' '\]' ref crystal/string.regexp.interpolated
+add-highlighter -override shared/crystal/string.command.percent.brace region -recurse '\{' '%x\{' '\}' ref crystal/string.regexp.interpolated
+add-highlighter -override shared/crystal/string.command.percent.angle region -recurse '<' '%x<' '>' ref crystal/string.regexp.interpolated
+add-highlighter -override shared/crystal/string.command.percent.pipe region '%x\|' '\|' ref crystal/string.regexp.interpolated
 
 # What’s new ───────────────────────────────────────────────────────────────────
 
